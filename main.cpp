@@ -1,36 +1,69 @@
 #include "main.hpp"
 
+#include "util.hpp"
+
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <complex>
 #include <cstddef>
 #include <iostream>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 int main() {
-	std::vector<int> vec;
-	genTable(2, vec);
+	// std::vector<int> vec;
+	// genTable(2, vec);
+	//
+	// token A(0, true), B(1), C(0), D(1, true);
+	// token AND1('a', &A, &B);
+	// token AND2('a', &C, &D);
+	// token OR('o', &AND1, &AND2);
+	//
+	// printExpression(&OR);
+	// std::cout << '\n';
+	//
+	// for(size_t i = 0; i < vec.size(); ++i) {
+	// 	std::cout << decToBin(vec[i], 2) << " = " << calcExpression(&OR, 2, vec[i]) << '\n';
+	// }
 
-	token A(0, true), B(1), C(0), D(1, true);
-	token AND1('a', &A, &B);
-	token AND2('a', &C, &D);
-	token OR('o', &AND1, &AND2);
-
-	printExpression(&OR);
-	std::cout << '\n';
-
-	for(size_t i = 0; i < vec.size(); ++i) {
-		std::cout << decToBin(vec[i], 2) << " = " << calcExpression(&OR, 2, vec[i]) << '\n';
+	std::vector<std::vector<int>> ftable;
+	genFullTable(2, ftable);
+	for(size_t i = 0; i < ftable.size(); ++i) {
+		std::cout << decToBin(ftable[i][0], 4) << ' ' << ftable[i][1] << '\n';
 	}
 
 	return 0;
 }
 
 void genTable(const int cnt, std::vector<int> &table) {
-	for(int i = 0; i < static_cast<int>(std::pow(2, cnt)); ++i) {
-		table.push_back(i);
+	int limit = static_cast<int>(std::pow(2, cnt));
+
+	table.clear();
+	table.resize(limit);
+	for(int i = 0; i < limit; ++i) {
+		table[i] = i;
+	}
+}
+
+void genFullTable(const int cnt, std::vector<std::vector<int>> &table) {
+	int limit = static_cast<int>(std::pow(2, cnt));
+
+	table.clear();
+	table.resize(limit);
+
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<int> uni(0, INT_MAX);
+
+	int fvalues = uni(rng);
+
+	for(int i = 0; i < limit; ++i) {
+		table[i].push_back(i);
+		table[i].push_back(fvalues % 2);
+		fvalues = fvalues >> 1;
 	}
 }
 

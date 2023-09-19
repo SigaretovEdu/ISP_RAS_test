@@ -35,6 +35,7 @@ struct token {
 };
 
 void genTable(const int cnt, std::vector<int> &table);
+void genFullTable(const int cnt, std::vector<std::vector<int>> &table);
 std::string decToBin(int a, const size_t format);
 void printExpression(const token *root);
 void printExpressionValues(const token *root, int args, int values);
