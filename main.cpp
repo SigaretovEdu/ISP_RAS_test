@@ -14,20 +14,15 @@ int main() {
 	genTable(2, vec);
 
 	token A(0, true), B(1), C(0), D(1, true);
-	token AND1('a'), AND2('a'), OR1('o');
+	token AND1('a', &A, &B);
+	token AND2('a', &C, &D);
+	token OR('o', &AND1, &AND2);
 
-	AND1.left = &A;
-	AND1.right = &B;
-	AND2.left = &C;
-	AND2.right = &D;
-	OR1.left = &AND1;
-	OR1.right = &AND2;
-
-	printExpression(&OR1);
+	printExpression(&OR);
 	std::cout << '\n';
 
 	for(size_t i = 0; i < vec.size(); ++i) {
-		std::cout << decToBin(vec[i], 2) << " = " << calcExpression(&OR1, 2, vec[i]) << '\n';
+		std::cout << decToBin(vec[i], 2) << " = " << calcExpression(&OR, 2, vec[i]) << '\n';
 	}
 
 	return 0;

@@ -26,6 +26,12 @@ struct token {
 		left = nullptr;
 		right = nullptr;
 	}
+	token(char op, token *l, token *r) {
+		tokenType = 'o';
+		opType = op;
+		left = l;
+		right = r;
+	}
 };
 
 void genTable(const int cnt, std::vector<int> &table);
