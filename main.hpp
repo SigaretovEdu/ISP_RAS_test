@@ -65,18 +65,25 @@ struct rec {
 
 inline bool operator<(const rec &l, const rec &r);
 
-std::map<int, int> genFullTable(const int cnt);
-std::vector<int> genGreyTable(const int cnt);
-std::vector<std::vector<int>> genKarnaugh(std::map<int, int> &ftable, int varNum);
+void read();
+
+std::vector<int> genTable(const int varNum);
+std::map<int, int> genFullTable(const int varNum, int num = -1);
+std::vector<int> genGreyTable(const int varNum);
+std::vector<std::vector<int>> genKarnaugh(std::map<int, int> &ftable, const int varNum);
 std::vector<std::vector<int>> expandK(const std::vector<std::vector<int>> &karnaugh);
 void expandR(rec &r, const std::vector<std::vector<int>> &ex);
 std::vector<rec> splitRec(rec &r, size_t h, size_t w);
-std::set<rec> cutKarnaugh(const std::vector<std::vector<int>> &karnaugh);
-token *makeExpression(std::set<rec> recs, int varNum);
+std::vector<rec> cutKarnaugh(const std::vector<std::vector<int>> &karnaugh);
+token *makeExpression(std::vector<rec> recs, int varNum);
+token *makeFExplression(std::map<int, int> &ftable, int varNum);
 
 bool calcExpression(token *root, int args, int values);
+void calcExpressions(std::vector<token *> functionsList, const int varNum);
 
 void printExpression(const token *root);
 void printExpressionValues(const token *root, int args, int values);
 void printEx(const std::vector<std::vector<int>> &e);
 void printKarnaugh(const std::vector<std::vector<int>> &karnaugh);
+
+void test(int Varnum, int seed = -1);
