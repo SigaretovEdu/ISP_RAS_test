@@ -1,10 +1,21 @@
 #pragma once
 
+#include "util.hpp"
+
+#include <algorithm>
+#include <cinttypes>
+#include <climits>
+#include <cmath>
+#include <complex>
 #include <cstddef>
 #include <iostream>
 #include <map>
+#include <math.h>
+#include <random>
 #include <set>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 struct token {

@@ -1,23 +1,5 @@
 #include "main.hpp"
 
-#include "util.hpp"
-
-#include <algorithm>
-#include <cinttypes>
-#include <climits>
-#include <cmath>
-#include <complex>
-#include <cstddef>
-#include <iostream>
-#include <map>
-#include <math.h>
-#include <random>
-#include <set>
-#include <stdexcept>
-#include <string>
-#include <utility>
-#include <vector>
-
 /*
 !X0*!X1 + !X0*X2*X3 + !X1*X2*X3 + X0*X1*!X3
 */
