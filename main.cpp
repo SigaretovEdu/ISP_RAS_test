@@ -7,7 +7,7 @@ int main() {
 	read();
 
 	// 0 - 65535
-	// test(4, 5534);
+	// test(4, 5481);
 
 	return 0;
 }
@@ -25,6 +25,16 @@ inline bool operator<(const rec &l, const rec &r) {
 	else {
 		return l.y2 < r.y2;
 	}
+}
+
+void freeTokens(token *root) {
+	if(root == nullptr)
+		return;
+	if(root->tokenType == 'o') {
+		freeTokens(root->left);
+		freeTokens(root->right);
+	}
+	delete root;
 }
 
 void read() {
@@ -47,21 +57,8 @@ void read() {
 	printKarnaugh(karnaugh);
 
 	std::vector<std::vector<int>> e = expandK(karnaugh);
-
 	std::cout << "\nexpanded karnaugh map:\n";
-	size_t h = e.size() / 3, w = e[0].size() / 3;
-	for(size_t i = 0; i < e.size(); ++i) {
-		for(size_t j = 0; j < e[0].size(); ++j) {
-			std::cout << e[i][j];
-			if((j + 1) % w == 0) {
-				std::cout << ' ';
-			}
-		}
-		std::cout << '\n';
-		if((i + 1) % h == 0) {
-			std::cout << '\n';
-		}
-	}
+	printEx(e);
 
 	std::vector<rec> cuts = cutKarnaugh(karnaugh);
 	std::cout << "cuts from karnaugh map:\n";
@@ -86,10 +83,15 @@ void read() {
 	}
 	std::cout << '\n';
 	calcExpressions({f1, f2}, varNum);
+
+	freeTokens(f1);
+	freeTokens(f2);
+
+	return;
 }
 
 std::vector<int> genTable(const int varNum) {
-	std::vector<int> table(static_cast<int>(std::pow(2, varNum)));
+	std::vector<int> table(static_cast<size_t>(std::pow(2, varNum)));
 	for(size_t i = 0; i < table.size(); ++i) {
 		table[i] = i;
 	}
@@ -97,7 +99,7 @@ std::vector<int> genTable(const int varNum) {
 }
 
 std::map<int, int> genFullTable(const int varNum, int num) {
-	int limit = static_cast<int>(std::pow(2, varNum));
+	int limit = std::pow(2, varNum);
 
 	std::map<int, int> ftable;
 
@@ -121,7 +123,7 @@ std::map<int, int> genFullTable(const int varNum, int num) {
 }
 
 std::vector<int> genGreyTable(const int varNum) {
-	size_t limit = static_cast<size_t>(std::pow(2, varNum));
+	size_t limit = std::pow(2, varNum);
 	std::vector<int> gtable;
 	gtable.reserve(limit);
 	gtable.push_back(0);
@@ -144,8 +146,8 @@ std::vector<int> genGreyTable(const int varNum) {
 }
 
 std::vector<std::vector<int>> genKarnaugh(std::map<int, int> &ftable, const int varNum) {
-	int leftNums = static_cast<int>(std::floor(varNum / 2.0));
-	int rightNums = static_cast<int>(std::ceil(varNum / 2.0));
+	int leftNums = std::floor(varNum / 2.0);
+	int rightNums = std::ceil(varNum / 2.0);
 
 	std::vector<int> leftGTabel = genGreyTable(leftNums);
 	std::vector<int> rightGTabel = genGreyTable(rightNums);
@@ -166,37 +168,6 @@ std::vector<std::vector<int>> expandK(const std::vector<std::vector<int>> &karna
 
 	std::vector<std::vector<int>> e(h * 3, std::vector<int>(w * 3, 0));
 
-	// for(size_t i = 0; i < h; ++i) {
-	// 	bool f = false;
-	// 	for(size_t j = 0; j < w; ++j) {
-	// 		e[i + h][j + w] = karnaugh[i][j];
-	// 		if(karnaugh[i][j] == 0)
-	// 			f = true;
-	// 	}
-	//
-	// 	if(f) {
-	// 		for(size_t j = 0; j < w; ++j) {
-	// 			e[i + h][j] = karnaugh[i][j];
-	// 			e[i + h][j + 2 * w] = karnaugh[i][j];
-	// 		}
-	// 	}
-	// }
-	//
-	// for(size_t j = 0; j < w; ++j) {
-	// 	bool f = false;
-	// 	for(size_t i = 0; i < h; ++i) {
-	// 		if(karnaugh[i][j] == 0)
-	// 			f = true;
-	// 	}
-	//
-	// 	if(f) {
-	// 		for(size_t i = 0; i < h; ++i) {
-	// 			e[i][j + w] = karnaugh[i][j];
-	// 			e[i + 2 * h][j + w] = karnaugh[i][j];
-	// 		}
-	// 	}
-	// }
-
 	for(size_t i = 0; i < h; ++i) {
 		for(size_t j = 0; j < w; ++j) {
 			e[i][j] = karnaugh[i][j];
@@ -211,23 +182,21 @@ std::vector<std::vector<int>> expandK(const std::vector<std::vector<int>> &karna
 		}
 	}
 
-	// print(e);
-
 	return e;
 }
 
 void expandR(rec &r, const std::vector<std::vector<int>> &ex) {
 	size_t h = ex.size(), w = ex[0].size();
 
-	// try right
+	// right
 	while(r.x2 < w - 1 && ex[r.y2][r.x2 + 1] == 1) {
 		++r.x2;
 	}
-	// try left
+	// left
 	while(r.x1 > 0 && ex[r.y1][r.x1 - 1] == 1) {
 		--r.x1;
 	}
-	// try down
+	// down
 	while(r.y2 < h - 1) {
 		bool f = true;
 		for(size_t j = r.x1; j <= r.x2; ++j) {
@@ -243,7 +212,7 @@ void expandR(rec &r, const std::vector<std::vector<int>> &ex) {
 			break;
 		}
 	}
-	// try up
+	// up
 	while(r.y1 > 0) {
 		bool f = true;
 		for(size_t j = r.x1; j <= r.x2; ++j) {
@@ -261,7 +230,7 @@ void expandR(rec &r, const std::vector<std::vector<int>> &ex) {
 	}
 }
 
-std::vector<rec> splitRec(rec &r, size_t h, size_t w) {
+std::vector<rec> splitRec(rec r, const size_t h, const size_t w) {
 	if(r.x1 > r.x2)
 		r.x2 += w;
 	if(r.y1 > r.y2)
@@ -269,8 +238,8 @@ std::vector<rec> splitRec(rec &r, size_t h, size_t w) {
 
 	std::vector<rec> recs;
 	recs.push_back(r);
-	int nh = std::pow(2, static_cast<int>(log2(r.y2 - r.y1 + 1)));
-	int nw = std::pow(2, static_cast<int>(log2(r.x2 - r.x1 + 1)));
+	size_t nh = std::pow(2, static_cast<int>(log2(r.y2 - r.y1 + 1)));
+	size_t nw = std::pow(2, static_cast<int>(log2(r.x2 - r.x1 + 1)));
 
 	if(nh != (r.y2 - r.y1 + 1)) {
 		recs.push_back(r);
@@ -332,7 +301,7 @@ std::vector<rec> cutKarnaugh(const std::vector<std::vector<int>> &karnaugh) {
 
 	std::vector<rec> fin(recs.begin(), recs.end());
 
-	// test for duplicate rectangles ( NOT OPTIMAL BY TIME AND SOLUTION)
+	// delete duplicate rectangles ( NOT OPTIMAL BY TIME AND SOLUTION)
 	bool f;
 	std::vector<rec> tmp;
 	size_t pos = 0;
@@ -366,9 +335,9 @@ std::vector<rec> cutKarnaugh(const std::vector<std::vector<int>> &karnaugh) {
 	return fin;
 }
 
-token *makeExpression(std::vector<rec> recs, int varNum) {
-	int leftNums = static_cast<int>(std::floor(varNum / 2.0));
-	int rightNums = static_cast<int>(std::ceil(varNum / 2.0));
+token *makeExpression(const std::vector<rec> recs, const int varNum) {
+	int leftNums = std::floor(varNum / 2.0);
+	int rightNums = std::ceil(varNum / 2.0);
 	size_t h = std::pow(2, leftNums);
 	size_t w = std::pow(2, rightNums);
 
@@ -455,7 +424,7 @@ token *makeExpression(std::vector<rec> recs, int varNum) {
 	return nullptr;
 }
 
-token *makeFExplression(std::map<int, int> &ftable, int varNum) {
+token *makeFExplression(const std::map<int, int> &ftable, const int varNum) {
 	std::vector<token *> tokenList;
 	for(auto &it: ftable) {
 		if(it.second == 1) {
@@ -513,7 +482,7 @@ token *makeFExplression(std::map<int, int> &ftable, int varNum) {
 	return nullptr;
 }
 
-bool calcExpression(token *root, int varNum, int values) {
+bool calcExpression(const token *root, const int varNum, const int values) {
 	if(root == nullptr) {
 		throw std::runtime_error("tokens structure error: catch nullptr child");
 	}
@@ -533,7 +502,7 @@ bool calcExpression(token *root, int varNum, int values) {
 	}
 }
 
-void calcExpressions(std::vector<token *> functionsList, const int varNum) {
+void calcExpressions(const std::vector<token *> functionsList, const int varNum) {
 	std::vector<int> table = genTable(varNum);
 
 	int format = std::log10(varNum) + 2;
@@ -609,7 +578,7 @@ void printExpression(const token *root) {
 	}
 }
 
-void printExpressionValues(const token *root, int varNum, int values) {
+void printExpressionValues(const token *root, const int &varNum, const int &values) {
 	if(root == nullptr) {
 		throw std::runtime_error("tokens structure error: catch nullptr child");
 	}
@@ -650,29 +619,24 @@ void printExpressionValues(const token *root, int varNum, int values) {
 }
 
 void printEx(const std::vector<std::vector<int>> &e) {
-	int cnt1 = 0, cnt2 = 0;
 	size_t h = e.size() / 3, w = e[0].size() / 3;
 	for(size_t i = 0; i < e.size(); ++i) {
 		for(size_t j = 0; j < e[0].size(); ++j) {
 			std::cout << e[i][j];
-			++cnt2;
-			if(cnt2 == w) {
-				cnt2 = 0;
+			if((j + 1) % w == 0) {
 				std::cout << ' ';
 			}
 		}
 		std::cout << '\n';
-		++cnt1;
-		if(cnt1 == h) {
-			cnt1 = 0;
+		if((i + 1) % h == 0) {
 			std::cout << '\n';
 		}
 	}
 }
 
 void printKarnaugh(const std::vector<std::vector<int>> &karnaugh) {
-	int leftNums = static_cast<int>(log2(karnaugh.size()));
-	int rightNums = static_cast<int>(log2(karnaugh[0].size()));
+	int leftNums = log2(karnaugh.size());
+	int rightNums = log2(karnaugh[0].size());
 
 	std::vector<int> leftGTabel = genGreyTable(leftNums);
 	std::vector<int> rightGTabel = genGreyTable(rightNums);
@@ -687,7 +651,7 @@ void printKarnaugh(const std::vector<std::vector<int>> &karnaugh) {
 	return;
 }
 
-void test(int varNum, int seed) {
+void test(const int varNum, const int seed) {
 	if(seed == -1) {
 		std::vector<int> table = genTable(varNum);
 		for(int i = 0; i < static_cast<int>(std::pow(2, std::pow(2, varNum))) - 1; ++i) {
@@ -712,9 +676,11 @@ void test(int varNum, int seed) {
 				}
 			}
 			if(!f) {
-				// bprint(ftable, varNum);
 				std::cout << "i(" << i << ") false\n";
 			}
+
+			freeTokens(f1);
+			freeTokens(f2);
 		}
 	}
 	else {
@@ -731,19 +697,7 @@ void test(int varNum, int seed) {
 		std::vector<std::vector<int>> e = expandK(karnaugh);
 
 		std::cout << "\nexpanded karnaugh map:\n";
-		size_t h = e.size() / 3, w = e[0].size() / 3;
-		for(size_t i = 0; i < e.size(); ++i) {
-			for(size_t j = 0; j < e[0].size(); ++j) {
-				std::cout << e[i][j];
-				if((j + 1) % w == 0) {
-					std::cout << ' ';
-				}
-			}
-			std::cout << '\n';
-			if((i + 1) % h == 0) {
-				std::cout << '\n';
-			}
-		}
+		printEx(e);
 
 		std::vector<rec> cuts = cutKarnaugh(karnaugh);
 		std::cout << "cuts from karnaugh map:\n";
@@ -766,6 +720,9 @@ void test(int varNum, int seed) {
 		}
 		std::cout << '\n';
 		calcExpressions({f1, f2}, varNum);
+
+		freeTokens(f1);
+		freeTokens(f2);
 	}
 	std::cout << "end of test varNum(" << varNum << ")\n";
 }
